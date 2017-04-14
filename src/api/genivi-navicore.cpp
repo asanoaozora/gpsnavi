@@ -12,7 +12,6 @@
 #include <string>
 #include <tuple>
 #include "genivi-navicore.h"
-#include "genivi-navicore-constants.h"
 #include "NaviTrace.h"
 
 #define __STDC_FORMAT_MACROS
@@ -25,13 +24,16 @@
 #include "naviexport.h"
 
 Navicore::Navicore( DBus::Connection &connection )
-    : DBus::ObjectAdaptor(connection, "/org/genivi/navicore"),
-      lastSession(0),lastRoute(0),client(""),IsSimulationMode(false),
-      SimulationStatus(SIMULATION_STATUS_NO_SIMULATION)
+    : DBus::ObjectAdaptor(connection, "/org/genivi/navigation/navigationcore"),
+    lastSession(0),client(""),lastRoute(0),IsSimulationMode(false),
+    SimulationStatus(SIMULATION_STATUS_NO_SIMULATION)
 {
 }
 
-::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Navicore::SessionGetVersion()
+//-------------------------------
+//Session interface
+//-------------------------------
+::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Navicore::NavigationCoreSession::GetVersion()
 {
     ::DBus::Struct<uint16_t, uint16_t, uint16_t, std::string> version;
     version._1 = 3;
@@ -41,39 +43,37 @@ Navicore::Navicore( DBus::Connection &connection )
     return version;
 }
 
-uint32_t Navicore::CreateSession_internal(void)
-{
-    return 0;
-}
-
-uint32_t Navicore::CreateSession(const std::string& client)
+void Navicore::CreateSession(const std::string& client, int32_t& error, uint32_t& sessionHandle)
 {
     if (lastSession != 0) // we only handle 1 session for now
     {
         TRACE_ERROR(" ");
-        return 0;
+        error= 0;
     }
 
     if (CreateSession_internal() < 0) // error
     {
         TRACE_ERROR("fail to create session (%s)", client.c_str());
-        return 0;
+        error= 0;
     }
 
     lastSession++;
     this->client = client;
 
     TRACE_INFO("SESSION ADAPTOR - Created session %d [%s]", lastSession, client.c_str());
-    return lastSession;
+    error=0; //not managed
+    sessionHandle=lastSession;
 }
 
-void Navicore::DeleteSession(const uint32_t& sessionHandle)
+int32_t Navicore::DeleteSession(const uint32_t& sessionHandle)
 {
     if (sessionHandle != lastSession || !sessionHandle) // we only handle 1 session for now
     {
         TRACE_ERROR("session: %" PRIu32, sessionHandle);
-        return;
+        return 1;
     }
+    SessionDeleted(sessionHandle);
+    return 0;
 }
 
 int32_t Navicore::GetSessionStatus(const uint32_t& sessionHandle)
@@ -95,7 +95,10 @@ std::vector< ::DBus::Struct< uint32_t, std::string > > Navicore::GetAllSessions(
     return list;
 }
 
-::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Navicore::RoutingGetVersion()
+//-------------------------------
+//Routing interface
+//-------------------------------
+::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Navicore::Routing::GetVersion()
 {
     ::DBus::Struct<uint16_t, uint16_t, uint16_t, std::string> version;
     version._1 = 3;
@@ -105,22 +108,23 @@ std::vector< ::DBus::Struct< uint32_t, std::string > > Navicore::GetAllSessions(
     return version;
 }
 
-uint32_t Navicore::CreateRoute(const uint32_t& sessionHandle)
+void Navicore::CreateRoute(const uint32_t& sessionHandle, int32_t& error, uint32_t& routeHandle)
 {
     if (sessionHandle != lastSession || !sessionHandle)
     {
         TRACE_ERROR("session %" PRIu32, sessionHandle);
-        return 0;
+        error=1;
     }
 
-    if (lastRoute != 0) return 0; // we only manage 1 route for now
+    if (lastRoute != 0) error=1; // we only manage 1 route for now
 
     lastRoute++;
     TRACE_INFO("Create route %" PRIu32 " for session %" PRIu32, lastRoute, sessionHandle);
-    return lastRoute;
+    error=0; //not managed
+    routeHandle=lastRoute;
 }
 
-void Navicore::DeleteRoute(const uint32_t& sessionHandle, const uint32_t& routeHandle)
+int32_t Navicore::DeleteRoute(const uint32_t& sessionHandle, const uint32_t& routeHandle)
 {
     TRACE_INFO("Delete route %" PRIu32 " for session %" PRIu32, routeHandle, sessionHandle);
 
@@ -128,15 +132,17 @@ void Navicore::DeleteRoute(const uint32_t& sessionHandle, const uint32_t& routeH
         !sessionHandle || !routeHandle)
     {
         TRACE_ERROR("session %" PRIu32 ", route %" PRIu32, sessionHandle, routeHandle);
-        return;
+        return 1;
     }
 
     CancelRouteCalculation(sessionHandle, routeHandle);
     lastRoute = 0;
     route.clear();
+    RouteDeleted(routeHandle);
+    return 0;
 }
 
-void Navicore::SetCostModel(const uint32_t& sessionHandle, const uint32_t& routeHandle, const int32_t& costModel)
+int32_t Navicore::SetCostModel(const uint32_t& sessionHandle, const uint32_t& routeHandle, const int32_t& costModel)
 {
     TRACE_WARN("TODO: implement this function");
 }
@@ -151,14 +157,10 @@ std::vector< int32_t > Navicore::GetSupportedCostModels()
     TRACE_WARN("TODO: implement this function");
 }
 
-void Navicore::SetRoutePreferences(
-    const uint32_t& sessionHandle,
-    const uint32_t& routeHandle,
-    const std::string& countryCode,
-    const std::vector< ::DBus::Struct< int32_t, int32_t > >& roadPreferenceList,
-    const std::vector< ::DBus::Struct< int32_t, int32_t > >& conditionPreferenceList)
+int32_t Navicore::SetRoutePreferences(const uint32_t& sessionHandle, const uint32_t& routeHandle, const std::string& countryCode, const std::vector< ::DBus::Struct< int32_t, int32_t > >& roadPreferenceList, const std::vector< ::DBus::Struct< int32_t, int32_t > >& conditionPreferenceList)
 {
     TRACE_WARN("TODO: implement this function");
+    return 1;
 }
 void Navicore::GetRoutePreferences(
     const uint32_t& routeHandle,
@@ -191,17 +193,12 @@ std::map< int32_t, uint32_t > Navicore::GetRouteSchedule(
     TRACE_WARN("TODO: implement this function");
 }
 
-void Navicore::SetTransportationMeans(
-    const uint32_t& sessionHandle,
-    const uint32_t& routeHandle,
-    const std::vector< int32_t >& transportationMeansList)
+int32_t Navicore::SetTransportationMeans(const uint32_t& sessionHandle, const uint32_t& routeHandle, const std::vector< int32_t >& transportationMeansList)
 {
     TRACE_WARN("TODO: implement this function");
 }
 
-std::vector< int32_t > Navicore::GetTransportationMeans(
-    const uint32_t& routeHandle)
-{
+std::vector< int32_t > Navicore::GetTransportationMeans(const uint32_t& routeHandle){
     TRACE_WARN("TODO: implement this function");
 }
 
@@ -210,10 +207,7 @@ std::vector< int32_t > Navicore::GetSupportedTransportationMeans()
     TRACE_WARN("TODO: implement this function");
 }
 
-void Navicore::SetExcludedAreas(
-    const uint32_t& sessionHandle,
-    const uint32_t& routeHandle,
-    const std::vector< std::vector< ::DBus::Struct< double, double > > >& excludedAreas)
+int32_t Navicore::SetExcludedAreas(const uint32_t& sessionHandle, const uint32_t& routeHandle, const std::vector< std::vector< ::DBus::Struct< double, double > > >& excludedAreas)
 {
     TRACE_WARN("TODO: implement this function");
 }
@@ -224,48 +218,7 @@ std::vector< std::vector< ::DBus::Struct< double, double > > > Navicore::GetExcl
     TRACE_WARN("TODO: implement this function");
 }
 
-// private
-void Navicore::SetIconVisibilityCoord(IconIndex index, bool visible,
-    double lat, double lon, bool commit)
-{
-    /* start flag, dest flag and pin flag: */
-    static const int icon_id[] =
-        { IconNum::FLAG_START_NUM, IconNum::FLAG_DEST_NUM, IconNum::FLAG_PIN_NUM };
-
-    demo_icon_info[index].IconID = icon_id[index];
-    demo_icon_info[index].Latitude      = (INT32)(lat*1024.0*3600.0);
-    demo_icon_info[index].Longititude   = (INT32)(lon*1024.0*3600.0);
-    demo_disp_info[index] = visible ? 1 : 0;
-
-    if (commit)
-    {
-        NC_DM_SetIconInfo(demo_icon_info, 3);
-        NC_DM_SetDynamicUDIDisplay(demo_disp_info, 3);
-    }
-}
-
-// private
-void Navicore::SetIconVisibility(IconIndex index, bool visible, bool commit)
-{
-    /* start flag, dest flag and pin flag: */
-    static const int icon_id[] =
-        { IconNum::FLAG_START_NUM, IconNum::FLAG_DEST_NUM, IconNum::FLAG_PIN_NUM };
-
-    demo_icon_info[index].IconID = icon_id[index];
-    demo_disp_info[index] = visible ? 1 : 0;
-
-    if (commit)
-    {
-        NC_DM_SetIconInfo(demo_icon_info, 3);
-        NC_DM_SetDynamicUDIDisplay(demo_disp_info, 3);
-    }
-}
-
-void Navicore::SetWaypoints(
-    const uint32_t& sessionHandle,
-    const uint32_t& routeHandle,
-    const bool& startFromCurrentPosition,
-    const std::vector< std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > > >& waypointsList)
+int32_t Navicore::SetWaypoints(const uint32_t& sessionHandle, const uint32_t& routeHandle, const bool& startFromCurrentPosition, const std::vector< std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > > >& waypointsList)
 {
     int index = 0;
 
@@ -276,7 +229,7 @@ void Navicore::SetWaypoints(
         !sessionHandle || !routeHandle)
     {
         TRACE_ERROR("session %" PRIu32 ", route %" PRIu32, sessionHandle, routeHandle);
-        return;
+        return 1;
     }
 
     /* mask Pin flag: */
@@ -294,12 +247,12 @@ void Navicore::SetWaypoints(
             /* Add current position in the memorized list of waypoints: */
             std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > > new_entry;
             ::DBus::Struct< uint8_t, ::DBus::Variant > new_lat, new_lon;
-            new_lat._1 = NAVICORE_LATITUDE;
+            new_lat._1 = GENIVI_NAVIGATIONCORE_LATITUDE;
             new_lat._2.writer().append_double(carState.coord.latitude/1024.0/3600.0);
-            new_entry[NAVICORE_LATITUDE] = new_lat;
-            new_lon._1 = NAVICORE_LONGITUDE;
+            new_entry[GENIVI_NAVIGATIONCORE_LATITUDE] = new_lat;
+            new_lon._1 = GENIVI_NAVIGATIONCORE_LONGITUDE;
             new_lon._2.writer().append_double(carState.coord.longitude/1024.0/3600.0);
-            new_entry[NAVICORE_LONGITUDE] = new_lon;
+            new_entry[GENIVI_NAVIGATIONCORE_LONGITUDE] = new_lon;
             route.insert(route.begin(), new_entry); /* insert in first place */
             /* --- */
 
@@ -327,12 +280,12 @@ void Navicore::SetWaypoints(
             for (map = (*wp_map).begin(); map != (*wp_map).end(); map++)
             {
                 TRACE_DEBUG("entry variant");
-                if ((*map).first == NAVICORE_LATITUDE)
+                if ((*map).first == GENIVI_NAVIGATIONCORE_LATITUDE)
                 {
                     newLat = (*map).second._2.reader().get_double();
                     TRACE_DEBUG("newLat = %f", newLat);
                 }
-                else if ((*map).first == NAVICORE_LONGITUDE)
+                else if ((*map).first == GENIVI_NAVIGATIONCORE_LONGITUDE)
                 {
                     newLon = (*map).second._2.reader().get_double();
                     TRACE_DEBUG("newLon = %f", newLon);
@@ -354,6 +307,7 @@ void Navicore::SetWaypoints(
     sample_hmi_request_mapDraw();
     sample_hmi_set_fource_update_mode();
     sample_hmi_request_update();
+    return 0;
 }
 
 void Navicore::GetWaypoints(
@@ -374,9 +328,7 @@ void Navicore::GetWaypoints(
     waypointsList = route;
 }
 
-void Navicore::CalculateRoute(
-    const uint32_t& sessionHandle,
-    const uint32_t& routeHandle)
+int32_t Navicore::CalculateRoute(const uint32_t& sessionHandle, const uint32_t& routeHandle)
 {
     double newLat, newLon;
     SMRPPOINT *NcPointsTab;
@@ -390,7 +342,7 @@ void Navicore::CalculateRoute(
         !sessionHandle || !routeHandle)
     {
         TRACE_ERROR("session %" PRIu32 ", route %" PRIu32, sessionHandle, routeHandle);
-        return;
+        return 1;
     }
 
     size = route.size();
@@ -405,12 +357,12 @@ void Navicore::CalculateRoute(
         for (map = (*wp_map).begin(); map != (*wp_map).end(); map++)
         {
             TRACE_DEBUG("entry variant");
-            if ((*map).first == NAVICORE_LATITUDE)
+            if ((*map).first == GENIVI_NAVIGATIONCORE_LATITUDE)
             {
                 newLat = (*map).second._2.reader().get_double();
                 TRACE_DEBUG("newLat = %f", newLat);
             }
-            else if ((*map).first == NAVICORE_LONGITUDE)
+            else if ((*map).first == GENIVI_NAVIGATIONCORE_LONGITUDE)
             {
                 newLon = (*map).second._2.reader().get_double();
                 TRACE_DEBUG("newLon = %f", newLon);
@@ -442,6 +394,9 @@ void Navicore::CalculateRoute(
     SetIconVisibility(FLAG_START_IDX, true);
     SetIconVisibility(FLAG_DEST_IDX, true);
     SetIconVisibility(FLAG_PIN_IDX, false, true);
+
+    std::map< int32_t, int32_t > unfulfilled_preferences;
+    RouteCalculationSuccessful(lastRoute,unfulfilled_preferences);
 
     sample_hmi_set_pin_mode(0);
     sample_hmi_request_mapDraw();
@@ -475,9 +430,7 @@ void Navicore::CancelRouteCalculation(
     sample_hmi_request_update();
 }
 
-std::vector< uint32_t > Navicore::CalculateRoutes(
-    const uint32_t& sessionHandle,
-    const std::vector< uint32_t >& calculatedRoutesList)
+void Navicore::CalculateAlternativeRoutes(const uint32_t& sessionHandle, const uint32_t& calculatedRoute, const uint16_t& numberOfAlternativeRoutes, int32_t& error, std::vector< uint32_t >& alternativeRoutesList)
 {
     TRACE_WARN("TODO: implement this function");
 }
@@ -492,6 +445,7 @@ void Navicore::GetRouteSegments(
                        std::vector< std::map< int32_t,
                        ::DBus::Struct< uint8_t, ::DBus::Variant > > >& routeSegments)
 {
+    totalNumberOfSegments=0;
     TRACE_WARN("TODO: implement this function");
 }
 
@@ -499,7 +453,19 @@ std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > > Navicore::GetRou
     const uint32_t& routeHandle,
     const std::vector< int32_t >& valuesToReturn)
 {
+    std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > > routeOverview;
+    ::DBus::Struct< uint8_t, ::DBus::Variant > var1,var2;
+    DBus::MessageIter iter1 = var1._2.writer();
+    DBus::MessageIter iter2 = var2._2.writer();
+    iter1.append_uint32(0);
+    iter2.append_uint32(0);
+    var1._1 = 0;
+    var2._1 = 0;
+    routeOverview[GENIVI_NAVIGATIONCORE_TOTAL_DISTANCE] = var1;
+    routeOverview[GENIVI_NAVIGATIONCORE_TOTAL_TIME] = var2;
+
     TRACE_WARN("TODO: implement this function");
+    return routeOverview;
 }
 
 ::DBus::Struct< ::DBus::Struct< double, double >, ::DBus::Struct< double, double > > Navicore::GetRouteBoundingBox(
@@ -530,7 +496,10 @@ std::vector< ::DBus::Struct< uint32_t, uint32_t > > Navicore::GetBlockedRouteStr
     TRACE_WARN("TODO: implement this function");
 }
 
-::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Navicore::PositionGetVersion()
+//-------------------------------
+//MapMatchedPosition interface
+//-------------------------------
+::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Navicore::MapMatchedPosition::GetVersion()
 {
     ::DBus::Struct<uint16_t, uint16_t, uint16_t, std::string> version;
     version._1 = 3;
@@ -538,23 +507,6 @@ std::vector< ::DBus::Struct< uint32_t, uint32_t > > Navicore::GetBlockedRouteStr
     version._3 = 0;
     version._4 = std::string("21-01-2014");
     return version;
-}
-
-void Navicore::FixSimulationStatus()
-{
-    /* if simu was launched from GUI and we were not informed : */
-    if (IsSimulationMode == false && NC_Simulation_IsInSimu() == 1)
-    {
-        IsSimulationMode = true;
-        SimulationStatus = SIMULATION_STATUS_RUNNING;
-    }
-
-    /* if simu was stopped from GUI and we were not informed : */
-    if (IsSimulationMode == true && NC_Simulation_IsInSimu() == 0)
-    {
-        IsSimulationMode = false;
-        SimulationStatus = SIMULATION_STATUS_NO_SIMULATION;
-    }
 }
 
 void Navicore::SetSimulationMode(const uint32_t& sessionHandle, const bool& activate)
@@ -592,14 +544,24 @@ int32_t Navicore::GetSimulationStatus()
     return SimulationStatus;
 }
 
-void Navicore::AddSimulationStatusListener()
-{
-    TRACE_WARN("TODO: implement this function");
+bool Navicore::subscribeForsimulationStatusChangedSelective()
+{ //not implemented yet, always return true
+    return true;
 }
 
-void Navicore::RemoveSimulationStatusListener()
-{
-    TRACE_WARN("TODO: implement this function");
+void Navicore::unsubscribeFromsimulationStatusChangedSelective()
+{ //not implemented yet
+
+}
+
+bool Navicore::subscribeForsimulationSpeedChangedSelective()
+{ //not implemented yet, always return true
+    return true;
+}
+
+void Navicore::unsubscribeFromsimulationSpeedChangedSelective()
+{ //not implemented yet
+
 }
 
 void Navicore::SetSimulationSpeed(const uint32_t& sessionHandle, const uint8_t& speedFactor)
@@ -608,16 +570,6 @@ void Navicore::SetSimulationSpeed(const uint32_t& sessionHandle, const uint8_t& 
 }
 
 uint8_t Navicore::GetSimulationSpeed()
-{
-    TRACE_WARN("TODO: implement this function");
-}
-
-void Navicore::AddSimulationSpeedListener()
-{
-    TRACE_WARN("TODO: implement this function");
-}
-
-void Navicore::RemoveSimulationSpeedListener()
 {
     TRACE_WARN("TODO: implement this function");
 }
@@ -653,8 +605,7 @@ static inline int32_t CONVERT_TO_GENIVI_HEADING(int32_t angle)
     return (450-angle) % 360;
 }
 
-std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > >
-    Navicore::GetPosition(const std::vector< int32_t >& valuesToReturn)
+void Navicore::GetPosition(const std::vector< int32_t >& valuesToReturn, int32_t& error, std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > >& position)
 {
     std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > > ret;
     SMCARSTATE carState;
@@ -664,7 +615,7 @@ std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > >
     if (NC_DM_GetCarState(&carState, e_SC_CARLOCATION_NOW) != NC_SUCCESS)
     {
         TRACE_ERROR("NC_DM_GetCarState failed");
-        return ret;
+        error=1;
     }
 
     for (std::vector< int32_t >::const_iterator it = valuesToReturn.begin(); it != valuesToReturn.end(); it++)
@@ -672,34 +623,33 @@ std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > >
         ::DBus::Struct< uint8_t, ::DBus::Variant > s;
         s._1 = *it;
 
-        if (s._1 == NAVICORE_LATITUDE) {
+        if (s._1 ==  GENIVI_NAVIGATIONCORE_LATITUDE) {
             s._2.writer().append_double(carState.coord.latitude/1024.0/3600.0);
-            ret[NAVICORE_LATITUDE] = s;
+            position[GENIVI_NAVIGATIONCORE_LATITUDE] = s;
             TRACE_INFO("\tlatitude: %f", (double)(carState.coord.latitude/1024.0/3600.0));
-        } else if (s._1 == NAVICORE_LONGITUDE) {
+        } else if (s._1 == GENIVI_NAVIGATIONCORE_LONGITUDE) {
             s._2.writer().append_double(carState.coord.longitude/1024.0/3600.0);
-            ret[NAVICORE_LONGITUDE] = s;
+            position[GENIVI_NAVIGATIONCORE_LONGITUDE] = s;
             TRACE_INFO("\tlongitude: %f", (double)(carState.coord.longitude/1024.0/3600.0));
-        /*} else if (s._1 == NAVICORE_TIMESTAMP) {
+        /*} else if (s._1 == GENIVI_NAVIGATIONCORE_TIMESTAMP) {
             s._2.writer().append_double(0.0); // TODO: not supported
             ret[NAVICORE_TIMESTAMP] = s;
             TRACE_INFO("\tGPS time: %s", carState.gpsTime);*/
-        } else if (s._1 == NAVICORE_HEADING) {
+        } else if (s._1 == GENIVI_NAVIGATIONCORE_HEADING) {
             s._2.writer().append_uint32((uint32_t)CONVERT_TO_GENIVI_HEADING(carState.dir));
-            ret[NAVICORE_HEADING] = s;
+            position[GENIVI_NAVIGATIONCORE_HEADING] = s;
             TRACE_INFO("\tdirection: %" PRId32, carState.dir);
-        /*} else if (s._1 == NAVICORE_SPEED) { // TODO: not supported
+        /*} else if (s._1 == GENIVI_NAVIGATIONCORE_SPEED) { // TODO: not supported
             s._2.writer().append_int32((int32_t)carState.speed);
             ret[NAVICORE_SPEED] = s;
             TRACE_INFO("\tspeed: %" PRId32 "(%f)", (int32_t)carState.speed, carState.speed);*/
-        } else if (s._1 == NAVICORE_SIMULATION_MODE) {
+        } else if (s._1 == GENIVI_NAVIGATIONCORE_SIMULATION_MODE) {
             s._2.writer().append_bool(NC_Simulation_IsInSimu());
-            ret[NAVICORE_SIMULATION_MODE] = s;
+            position[GENIVI_NAVIGATIONCORE_SIMULATION_MODE] = s;
             TRACE_INFO("\tsimulation mode: %d", NC_Simulation_IsInSimu());
         }
     }
-
-    return ret;
+    error=0;
 }
 
 void Navicore::SetPosition(
@@ -709,8 +659,7 @@ void Navicore::SetPosition(
     TRACE_WARN("TODO: implement this function");
 }
 
-std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > >
-    Navicore::GetAddress(const std::vector< int32_t >& valuesToReturn)
+void Navicore::GetCurrentAddress(const std::vector< int32_t >& valuesToReturn, int32_t& error, std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > >& address)
 {
     TRACE_WARN("TODO: implement this function");
 }
@@ -727,7 +676,10 @@ std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > >
     TRACE_WARN("TODO: implement this function");
 }
 
-::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Navicore::GuidanceGetVersion()
+//-------------------------------
+//Guidance interface
+//-------------------------------
+::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Navicore::Guidance::GetVersion()
 {
     ::DBus::Struct<uint16_t, uint16_t, uint16_t, std::string> version;
     version._1 = 3;
@@ -747,9 +699,10 @@ void Navicore::StopGuidance(const uint32_t& sessionHandle)
     TRACE_WARN("TODO: implement this function");
 }
 
-void Navicore::SetVoiceGuidance(const bool& activate, const std::string& voice)
+int32_t Navicore::SetVoiceGuidance(const bool& activate, const std::string& voice)
 {
     TRACE_WARN("TODO: implement this function");
+    return 1;
 }
 
 void Navicore::GetGuidanceDetails(bool& voiceGuidance, bool& vehicleOnTheRoad, bool& isDestinationReached, int32_t& maneuver)
@@ -757,9 +710,10 @@ void Navicore::GetGuidanceDetails(bool& voiceGuidance, bool& vehicleOnTheRoad, b
     TRACE_WARN("TODO: implement this function");
 }
 
-void Navicore::PlayVoiceManeuver()
+int32_t Navicore::PlayVoiceManeuver()
 {
     TRACE_WARN("TODO: implement this function");
+    return 1;
 }
 
 void Navicore::GetWaypointInformation(const uint16_t& requestedNumberOfWaypoints, uint16_t& numberOfWaypoints, std::vector< ::DBus::Struct< uint32_t, uint32_t, int32_t, int32_t, int16_t, int16_t, bool, uint16_t > >& waypointsList)
@@ -772,7 +726,7 @@ void Navicore::GetDestinationInformation(uint32_t& offset, uint32_t& travelTime,
     TRACE_WARN("TODO: implement this function");
 }
 
-void Navicore::GetManeuversList(const uint16_t& requestedNumberOfManeuvers, const uint32_t& maneuverOffset, uint16_t& numberOfManeuvers, std::vector< ::DBus::Struct< std::string, std::string, uint16_t, int32_t, uint32_t, std::vector< ::DBus::Struct< uint32_t, uint32_t, int32_t, int32_t, std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > > > > > >& maneuversList)
+void Navicore::GetManeuversList(const uint16_t& requestedNumberOfManeuvers, const uint32_t& maneuverOffset, int32_t& error, uint16_t& numberOfManeuvers, std::vector< ::DBus::Struct< std::vector< ::DBus::Struct< std::string, std::vector< ::DBus::Struct< int32_t, std::string > >, std::string > >, std::string, std::string, std::string, std::string, uint16_t, int32_t, uint32_t, std::vector< ::DBus::Struct< uint32_t, uint32_t, int32_t, int32_t, std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > > > > > >& maneuversList)
 {
     TRACE_WARN("TODO: implement this function");
 }
@@ -782,9 +736,10 @@ void Navicore::SetRouteCalculationMode(const uint32_t& sessionHandle, const int3
     TRACE_WARN("TODO: implement this function");
 }
 
-void Navicore::SkipNextManeuver(const uint32_t& sessionHandle)
+int32_t Navicore::SkipNextManeuver(const uint32_t& sessionHandle)
 {
    TRACE_WARN("TODO: implement this function");
+   return 1;
 }
 
 void Navicore::GetGuidanceStatus(int32_t& guidanceStatus, uint32_t& routeHandle)
@@ -792,12 +747,74 @@ void Navicore::GetGuidanceStatus(int32_t& guidanceStatus, uint32_t& routeHandle)
     TRACE_WARN("TODO: implement this function");
 }
 
-void Navicore::SetVoiceGuidanceSettings(const int32_t& promptMode)
+int32_t Navicore::SetVoiceGuidanceSettings(const int32_t& promptMode)
 {
     TRACE_WARN("TODO: implement this function");
+    return 1;
 }
 
 int32_t Navicore::GetVoiceGuidanceSettings()
 {
     TRACE_WARN("TODO: implement this function");
 }
+
+//-------------------------------
+// Navicore private
+//-------------------------------
+uint32_t Navicore::CreateSession_internal(void)
+{
+    return 0;
+}
+
+void Navicore::FixSimulationStatus()
+{
+    /* if simu was launched from GUI and we were not informed : */
+    if (IsSimulationMode == false && NC_Simulation_IsInSimu() == 1)
+    {
+        IsSimulationMode = true;
+        SimulationStatus = SIMULATION_STATUS_RUNNING;
+    }
+
+    /* if simu was stopped from GUI and we were not informed : */
+    if (IsSimulationMode == true && NC_Simulation_IsInSimu() == 0)
+    {
+        IsSimulationMode = false;
+        SimulationStatus = SIMULATION_STATUS_NO_SIMULATION;
+    }
+}
+
+void Navicore::SetIconVisibilityCoord(IconIndex index, bool visible,
+    double lat, double lon, bool commit)
+{
+    /* start flag, dest flag and pin flag: */
+    static const int icon_id[] =
+        { IconNum::FLAG_START_NUM, IconNum::FLAG_DEST_NUM, IconNum::FLAG_PIN_NUM };
+
+    demo_icon_info[index].IconID = icon_id[index];
+    demo_icon_info[index].Latitude      = (INT32)(lat*1024.0*3600.0);
+    demo_icon_info[index].Longititude   = (INT32)(lon*1024.0*3600.0);
+    demo_disp_info[index] = visible ? 1 : 0;
+
+    if (commit)
+    {
+        NC_DM_SetIconInfo(demo_icon_info, 3);
+        NC_DM_SetDynamicUDIDisplay(demo_disp_info, 3);
+    }
+}
+
+void Navicore::SetIconVisibility(IconIndex index, bool visible, bool commit)
+{
+    /* start flag, dest flag and pin flag: */
+    static const int icon_id[] =
+        { IconNum::FLAG_START_NUM, IconNum::FLAG_DEST_NUM, IconNum::FLAG_PIN_NUM };
+
+    demo_icon_info[index].IconID = icon_id[index];
+    demo_disp_info[index] = visible ? 1 : 0;
+
+    if (commit)
+    {
+        NC_DM_SetIconInfo(demo_icon_info, 3);
+        NC_DM_SetDynamicUDIDisplay(demo_disp_info, 3);
+    }
+}
+

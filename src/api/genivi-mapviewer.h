@@ -12,27 +12,56 @@
 
 #include <pthread.h>
 #include <dbus-c++/dbus.h>
-#include "genivi-mapviewer-adaptor.h"
+#include "genivi-mapviewer-configuration_adaptor.h"
+#include "genivi-mapviewer-session_adaptor.h"
+#include "genivi-mapviewer-mapviewercontrol_adaptor.h"
+#include "genivi-mapviewer-constants.h"
+
+class  MapViewerSession
+    : public org::genivi::navigation::mapviewer::Session_adaptor
+{
+        public:
+        MapViewerSession(){}
+        ::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > GetVersion();
+};
+
+class  Configuration
+    : public org::genivi::navigation::mapviewer::Configuration_adaptor
+{
+        public:
+        Configuration(){}
+        ::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > GetVersion();
+};
+
+class  MapViewerControl
+: public org::genivi::navigation::mapviewer::MapViewerControl_adaptor
+{
+        public:
+        MapViewerControl(){}
+        ::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > GetVersion();
+};
 
 class Mapviewer :
-    public org::genivi::mapviewer::Session_adaptor,
-    public org::genivi::mapviewer::Configuration_adaptor,
-    public org::genivi::mapviewer::MapViewerControl_adaptor,
-    public DBus::IntrospectableAdaptor,
-    public DBus::ObjectAdaptor
+    public MapViewerSession,
+        public Configuration,
+        public MapViewerControl,
+        public DBus::IntrospectableAdaptor,
+        DBus::ObjectAdaptor
 {
     public:
         Mapviewer( DBus::Connection &connection );
 
+        //-------------------------------
         // Session interface
-        ::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > SessionGetVersion();
-        uint32_t CreateSession(const std::string& client);
-        void DeleteSession(const uint32_t& sessionHandle);
+        //-------------------------------
+        void CreateSession(const std::string& client, int32_t& error, uint32_t& sessionHandle);
+        int32_t DeleteSession(const uint32_t& sessionHandle);
         int32_t GetSessionStatus(const uint32_t& sessionHandle);
         std::vector< ::DBus::Struct< uint32_t, std::string > > GetAllSessions();
 
+        //-------------------------------
         // Configuration interface
-        ::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > ConfigurationGetVersion();
+        //-------------------------------
         void SetUnitsOfMeasurement(const std::map< int32_t, int32_t >& unitsOfMeasurementList);
         std::map< int32_t, int32_t > GetUnitsOfMeasurement();
         std::map< int32_t, std::vector< int32_t > > GetSupportedUnitsOfMeasurement();
@@ -46,10 +75,11 @@ class Mapviewer :
         void GetLocale(std::string& languageCode, std::string& countryCode, std::string& scriptCode);
         std::vector< ::DBus::Struct< std::string, std::string, std::string > > GetSupportedLocales();
 
-        // MapViewerControl interface
-        ::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > MapViewerControlGetVersion();
-        uint32_t CreateMapViewInstance(const uint32_t& sessionHandle, const ::DBus::Struct< uint16_t, uint16_t >& mapViewSize, const int32_t& mapViewType);
-        void ReleaseMapViewInstance(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle);
+        //-------------------------------
+        // Control interface
+        //-------------------------------
+        void CreateMapViewInstance(const uint32_t& sessionHandle, const ::DBus::Struct< uint16_t, uint16_t >& mapViewSize, const int32_t& mapViewType, int32_t& error, uint32_t& mapViewInstanceHandle);
+        int32_t ReleaseMapViewInstance(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle);
         int32_t GetMapViewType(const uint32_t& mapViewInstanceHandle);
         std::vector< int32_t > GetSupportedMapViewTypes();
         void SetTargetPoint(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const ::DBus::Struct< double, double, double >& targetPoint);
@@ -71,8 +101,8 @@ class Mapviewer :
         void SetMapViewScaleMode(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const int32_t& scaleMode);
         int32_t GetMapViewScaleMode(const uint32_t& mapViewInstanceHandle);
         std::vector< int32_t > GetSupportedMapViewScaleModes(const uint32_t& mapViewInstanceHandle);
-        void AddMapViewScaleChangedListener();
-        void RemoveMapViewScaleChangedListener();
+        bool subscribeFormapViewScaleChangedSelective();
+        void unsubscribeFrommapViewScaleChangedSelective();
         void SetCameraHeight(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const uint32_t& height);
         uint32_t GetCameraHeight(const uint32_t& mapViewInstanceHandle);
         void SetMapViewPerspective(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const int32_t& perspective);
@@ -111,18 +141,18 @@ class Mapviewer :
         void SetMapViewTheme(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const int32_t& mapViewTheme);
         int32_t GetMapViewTheme(const uint32_t& mapViewInstanceHandle);
         std::vector< int32_t > GetSupportedMapViewThemes();
-        std::vector< ::DBus::Struct< double, double > > ConvertPixelCoordsToGeoCoords(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const std::vector< ::DBus::Struct< uint16_t, uint16_t > >& pixelCoordinates);
-        std::vector< ::DBus::Struct< uint16_t, uint16_t > > ConvertGeoCoordsToPixelCoords(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const std::vector< ::DBus::Struct< double, double > >& geoCoordinates);
+        void ConvertPixelCoordsToGeoCoords(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const std::vector< ::DBus::Struct< uint16_t, uint16_t > >& pixelCoordinates, int32_t& error, std::vector< ::DBus::Struct< double, double > >& geoCoordinates);
+        void ConvertGeoCoordsToPixelCoords(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const std::vector< ::DBus::Struct< double, double > >& geoCoordinates, int32_t& error, std::vector< ::DBus::Struct< uint16_t, uint16_t > >& pixelCoordinates);
         std::vector< uint32_t > DisplayCustomElements(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const std::vector< ::DBus::Struct< std::string, std::string, ::DBus::Struct< double, double >, ::DBus::Struct< int16_t, int16_t > > >& customElements);
         void HideCustomElements(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const std::vector< uint32_t >& customElementHandles);
         std::map< uint32_t, ::DBus::Struct< std::string, std::string, ::DBus::Struct< double, double >, ::DBus::Struct< int16_t, int16_t > > > GetDisplayedCustomElements(const uint32_t& mapViewInstanceHandle);
         std::vector< ::DBus::Struct< int32_t, ::DBus::Struct< double, double >, ::DBus::Struct< uint8_t, ::DBus::Variant > > > SelectElementsOnMap(const uint32_t& mapViewInstanceHandle, const ::DBus::Struct< uint16_t, uint16_t >& pixelCoordinate, const std::vector< int32_t >& selectableTypes, const uint16_t& maxNumberOfSelectedElements);
 
-    private:
+private:
+        std::vector< ::DBus::Struct< std::string, std::string, ::DBus::Struct< double, double >, ::DBus::Struct< int16_t, int16_t > > > CustomElementsStore;
         uint32_t lastSession, lastViewInstance;
         std::string client;
         pthread_t p;
-        std::vector< ::DBus::Struct< std::string, std::string, ::DBus::Struct< double, double >, ::DBus::Struct< int16_t, int16_t > > > CustomElementsStore;
 };
 
 #endif // GENIVI_MAPVIEWER_H

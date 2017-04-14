@@ -13,7 +13,6 @@
 #include <tuple>
 #include <pthread.h>
 #include "genivi-mapviewer.h"
-#include "genivi-mapviewer-constants.h"
 #include "NaviTrace.h"
 
 #define __STDC_FORMAT_MACROS
@@ -25,12 +24,15 @@
 #include "naviexport.h"
 
 Mapviewer::Mapviewer( DBus::Connection &connection )
-    : DBus::ObjectAdaptor(connection, "/org/genivi/mapviewer"),
-      lastSession(0),lastViewInstance(0),client("")
+    : DBus::ObjectAdaptor(connection, "/org/genivi/navigation/mapviewer"),
+    lastSession(0),lastViewInstance(0),client("")
 {
 }
 
-::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Mapviewer::SessionGetVersion()
+//-------------------------------
+// Session interface
+//-------------------------------
+::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Mapviewer::MapViewerSession::GetVersion()
 {
     ::DBus::Struct<uint16_t, uint16_t, uint16_t, std::string> version;
     version._1 = 3;
@@ -40,38 +42,40 @@ Mapviewer::Mapviewer( DBus::Connection &connection )
     return version;
 }
 
-uint32_t Mapviewer::CreateSession(const std::string& client)
+void Mapviewer::CreateSession(const std::string& client, int32_t& error, uint32_t& sessionHandle)
 {
     if (lastSession != 0) // we only handle 1 session for now
     {
         TRACE_ERROR(" ");
-        return 0;
+        error=1;
     }
 
     lastSession++;
     this->client = client;
 
     TRACE_INFO("SESSION ADAPTOR - Created session %d [%s]", lastSession, client.c_str());
-    return lastSession;
+    error=0; //not managed
+    sessionHandle=lastSession;
 }
 
-void Mapviewer::DeleteSession(const uint32_t& sessionHandle)
+int32_t Mapviewer::DeleteSession(const uint32_t& sessionHandle)
 {
     if (sessionHandle != lastSession) // we only handle 1 session for now
     {
         TRACE_ERROR(" ");
-        return;
+        return 1;
     }
 
     lastSession = 0;
     TRACE_INFO("SESSION ADAPTOR - Deleted session %d\n", sessionHandle);
+    return 0;
 }
 
 int32_t Mapviewer::GetSessionStatus(const uint32_t& sessionHandle)
 {
     if (sessionHandle == 1 && lastSession != 1) // we only handle 1 session for now
-        return MAPVIEWER_AVAILABLE;
-    return MAPVIEWER_NOT_AVAILABLE;
+        return GENIVI_MAPVIEWER_AVAILABLE;
+    return GENIVI_MAPVIEWER_NOT_AVAILABLE;
 }
 
 std::vector< ::DBus::Struct< uint32_t, std::string > > Mapviewer::GetAllSessions()
@@ -86,8 +90,10 @@ std::vector< ::DBus::Struct< uint32_t, std::string > > Mapviewer::GetAllSessions
     return list;
 }
 
+//-------------------------------
 // Configuration interface
-::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Mapviewer::ConfigurationGetVersion()
+//-------------------------------
+::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Mapviewer::Configuration::GetVersion()
 {
     ::DBus::Struct<uint16_t, uint16_t, uint16_t, std::string> version;
     version._1 = 3;
@@ -157,7 +163,10 @@ std::vector< ::DBus::Struct< std::string, std::string, std::string > > Mapviewer
     TRACE_WARN("TODO: implement this function");
 }
 
-::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Mapviewer::MapViewerControlGetVersion()
+//-------------------------------
+// Control interface
+//-------------------------------
+::DBus::Struct< uint16_t, uint16_t, uint16_t, std::string > Mapviewer::MapViewerControl::GetVersion()
 {
     ::DBus::Struct<uint16_t, uint16_t, uint16_t, std::string> version;
     version._1 = 3;
@@ -173,10 +182,7 @@ static void *glvEventLoop_(void *arg)
     return NULL;
 }
 
-uint32_t Mapviewer::CreateMapViewInstance(
-    const uint32_t& sessionHandle,
-    const ::DBus::Struct< uint16_t, uint16_t >& mapViewSize,
-    const int32_t& mapViewType)
+void Mapviewer::CreateMapViewInstance(const uint32_t& sessionHandle, const ::DBus::Struct< uint16_t, uint16_t >& mapViewSize, const int32_t& mapViewType, int32_t& error, uint32_t& mapViewInstanceHandle)
 {
     uint32_t handle;
 
@@ -184,18 +190,17 @@ uint32_t Mapviewer::CreateMapViewInstance(
 		|| lastViewInstance != 0) // for now, we only support 1 view per session
 	{
 		TRACE_ERROR("Fail to create MapViewInstance for session %" PRIu32, sessionHandle);
-		return 0;
+                error=1;
 	}
 
 	lastViewInstance++;
 
-	return lastViewInstance;
+        error=0; //not managed
+        mapViewInstanceHandle=lastViewInstance;
 }
 
 
-void Mapviewer::ReleaseMapViewInstance(
-    const uint32_t& sessionHandle,
-    const uint32_t& mapViewInstanceHandle)
+int32_t Mapviewer::ReleaseMapViewInstance(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle)
 {
 	TRACE_INFO("Release instance view %" PRIu32 " in session %" PRIu32, mapViewInstanceHandle, sessionHandle);
 
@@ -204,10 +209,11 @@ void Mapviewer::ReleaseMapViewInstance(
 		!sessionHandle || !mapViewInstanceHandle)
 	{
 		TRACE_ERROR("session %" PRIu32 ", instance %" PRIu32, sessionHandle, mapViewInstanceHandle );
-		return;
+                return 1;
 	}
 
 	lastViewInstance = 0; // we only handle one instance for now
+        return 0;
 }
 
 int32_t Mapviewer::GetMapViewType(
@@ -368,16 +374,6 @@ std::vector< int32_t > Mapviewer::GetSupportedMapViewScaleModes(const uint32_t& 
     TRACE_WARN("TODO: implement this function");
 }
 
-void Mapviewer::AddMapViewScaleChangedListener()
-{
-    TRACE_WARN("TODO: implement this function");
-}
-
-void Mapviewer::RemoveMapViewScaleChangedListener()
-{
-    TRACE_WARN("TODO: implement this function");
-}
-
 void Mapviewer::SetCameraHeight(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const uint32_t& height)
 {
     TRACE_WARN("TODO: implement this function");
@@ -396,14 +392,14 @@ void Mapviewer::SetMapViewPerspective(const uint32_t& sessionHandle, const uint3
 int32_t Mapviewer::GetMapViewPerspective(const uint32_t& mapViewInstanceHandle)
 {
     TRACE_INFO("mapViewInstanceHandle: %" PRIu32, mapViewInstanceHandle);
-    return MAPVIEWER_2D;
+    return GENIVI_MAPVIEWER_2D;
 }
 
 std::vector< int32_t > Mapviewer::GetSupportedMapViewPerspectives()
 {
     TRACE_INFO(" ");
     std::vector<int32_t> ret;
-    ret.push_back(MAPVIEWER_2D);
+    ret.push_back(GENIVI_MAPVIEWER_2D);
     return ret;
 }
 
@@ -430,7 +426,7 @@ std::vector< ::DBus::Struct< uint16_t, uint16_t, int32_t, uint32_t > > Mapviewer
     {
         ::DBus::Struct< uint16_t, uint16_t, int32_t, uint32_t > newVal;
         newVal._1 = newVal._2 = i;
-        newVal._3 = MAPVIEWER_METER; // TODO: dummy value
+        newVal._3 = GENIVI_MAPVIEWER_METER; // TODO: dummy value
         newVal._4 = 1000;  // TODO: dummy value
         TRACE_DEBUG("pushing %d", i);
         ret.push_back(newVal);
@@ -485,9 +481,9 @@ void Mapviewer::GetMapViewScale(const uint32_t& mapViewInstanceHandle, uint8_t& 
 
     if (main_window_mapScale != scaleID) TRACE_ERROR(" ");
 
-    if (scaleID == 0) isMinMax = MAPVIEWER_MIN;
-    else if (scaleID == hmiMAP_MAX_SCALE) isMinMax = MAPVIEWER_MAX;
-    else isMinMax = MAPVIEWER_MID;
+    if (scaleID == 0) isMinMax = GENIVI_MAPVIEWER_MIN;
+    else if (scaleID == hmiMAP_MAX_SCALE) isMinMax = GENIVI_MAPVIEWER_MAX;
+    else isMinMax = GENIVI_MAPVIEWER_MID;
 }
 
 void Mapviewer::SetMapViewBoundingBox(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const ::DBus::Struct< ::DBus::Struct< double, double >, ::DBus::Struct< double, double > >& boundingBox)
@@ -619,14 +615,24 @@ std::vector< int32_t > Mapviewer::GetSupportedMapViewThemes()
     TRACE_WARN("TODO: implement this function");
 }
 
-std::vector< ::DBus::Struct< double, double > > Mapviewer::ConvertPixelCoordsToGeoCoords(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const std::vector< ::DBus::Struct< uint16_t, uint16_t > >& pixelCoordinates)
+void Mapviewer::ConvertPixelCoordsToGeoCoords(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const std::vector< ::DBus::Struct< uint16_t, uint16_t > >& pixelCoordinates, int32_t& error, std::vector< ::DBus::Struct< double, double > >& geoCoordinates)
 {
     TRACE_WARN("TODO: implement this function");
 }
 
-std::vector< ::DBus::Struct< uint16_t, uint16_t > > Mapviewer::ConvertGeoCoordsToPixelCoords(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const std::vector< ::DBus::Struct< double, double > >& geoCoordinates)
+void Mapviewer::ConvertGeoCoordsToPixelCoords(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const std::vector< ::DBus::Struct< double, double > >& geoCoordinates, int32_t& error, std::vector< ::DBus::Struct< uint16_t, uint16_t > >& pixelCoordinates)
 {
     TRACE_WARN("TODO: implement this function");
+}
+
+bool Mapviewer::subscribeFormapViewScaleChangedSelective()
+{//not implemented yet, always return true
+    return true;
+}
+
+void Mapviewer::unsubscribeFrommapViewScaleChangedSelective()
+{//not implemented yet
+
 }
 
 std::vector< uint32_t > Mapviewer::DisplayCustomElements(
