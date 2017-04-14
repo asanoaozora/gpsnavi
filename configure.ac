@@ -3,6 +3,15 @@
 
 AC_PREREQ([2.68])
 AC_INIT([navi], [0.0.8], [gpsnavi-inquiry@itg.hitachi.co.jp])
+
+# add an option to avoid agl errors when build without agl :-)
+AC_ARG_ENABLE([agl],
+  [AS_HELP_STRING([--enable-agl], [Enable AGL build @<:@check@:>@])],
+  [:],
+  [enable_agl=check])
+
+AM_CONDITIONAL([ENABLE_AGL], [test "$enable_agl" = "yes"])
+
 AM_INIT_AUTOMAKE()
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/main/navi.c])
