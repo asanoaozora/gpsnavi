@@ -35,14 +35,20 @@ void dbusServerLoop(Navicore **naviCore, Mapviewer **mapViewer)
 
     DBus::default_dispatcher = &dispatcher;
     DBus::Connection conn = DBus::Connection::SessionBus();
+#ifdef STANDALONE
     conn.request_name("org.genivi.navigation");
+#else
+    conn.request_name("org.agl.gpsnavi");
+#endif
 
     *naviCore = new Navicore(conn);
     *mapViewer = new Mapviewer(conn);
     TRACE_DEBUG("DBus server loop initialized");
     int32_t error;
     uint32_t sessionHandle;
-
+#ifndef STANDALONE
+    (*naviCore)->CreateSession(std::string("dummy"),error,sessionHandle);
+#endif
     // Create an instance of mapviewer
     (*mapViewer)->CreateSession(std::string("dummy"),error,sessionHandle);
 

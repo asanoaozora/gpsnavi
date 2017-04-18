@@ -1,8 +1,15 @@
 Navigation Open Source Project
 ==============================
 
-This recipe for Navigation demo is intended to be built into Automotive Grade Linux (AGL) source code
+This recipe for Navigation demo is intended to be built either into Automotive Grade Linux (AGL) source code
 (https://wiki.automotivelinux.org/agl-distro/source-code).
+or outside, by using --enable-standalone as an option for configure
+
+## How-to build
+./configure 
+or ./configure --enable-standalone
+NB: To test it under Ubuntu (with weston), please comment line 30 of src/glview_wayland.c to unuse IVI_SHELL)
+make
 
 ## Usage
 

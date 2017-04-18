@@ -4,6 +4,10 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 lib_LTLIBRARIES = libnavicore.la
 
+if ENABLE_STANDALONE
+EXTRAFLAGS = -DSTANDALONE
+endif
+
 libnavicore_la_SOURCES = \
 sms/lib/smsutil/src/smsutil.c \
 sms/lib/smsutil/src/polygon.cpp \
@@ -598,6 +602,7 @@ LICENSE \
 COPYING
 
 navi_CPPFLAGS = \
+	$(EXTRAFLAGS) \
         -D_BSD_SOURCE \
         -I$(top_srcdir)/src/sms \
         -I$(top_srcdir)/src/sms/lib/include \

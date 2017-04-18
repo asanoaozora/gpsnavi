@@ -2,16 +2,16 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = src
 DIST_SUBDIRS = src
 
-if ENABLE_AGL
-CLEANFILES = agl/navigation.wgt flite jtalk
-else
+if ENABLE_STANDALONE
 CLEANFILES = flite jtalk
+else
+CLEANFILES = agl/navigation.wgt flite jtalk
 endif
 
-if ENABLE_AGL
-bin_SCRIPTS = flite jtalk navigation.wgt
-else
+if ENABLE_STANDALONE
 bin_SCRIPTS = flite jtalk
+else
+bin_SCRIPTS = flite jtalk navigation.wgt
 endif
 
 flite: flite.in

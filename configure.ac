@@ -3,14 +3,13 @@
 
 AC_PREREQ([2.68])
 AC_INIT([navi], [0.0.8], [gpsnavi-inquiry@itg.hitachi.co.jp])
-
-# add an option to avoid agl errors when build without agl :-)
-AC_ARG_ENABLE([agl],
-  [AS_HELP_STRING([--enable-agl], [Enable AGL build @<:@check@:>@])],
+# add an option to avoid agl errors when build for GENIVI
+AC_ARG_ENABLE([standalone],
+  [AS_HELP_STRING([--enable-standalone], [Enable standalone build @<:@check@:>@])],
   [:],
-  [enable_agl=check])
+  [enable_standalone=check])
 
-AM_CONDITIONAL([ENABLE_AGL], [test "$enable_agl" = "yes"])
+AM_CONDITIONAL([ENABLE_STANDALONE], [test "$enable_standalone" = "yes"])
 
 AM_INIT_AUTOMAKE()
 AM_INIT_AUTOMAKE([subdir-objects])
