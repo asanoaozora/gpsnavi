@@ -424,6 +424,8 @@ void Navicore::CancelRouteCalculation(
     SetIconVisibility(FLAG_DEST_IDX, false);
     SetIconVisibility(FLAG_PIN_IDX, true, true);
 
+    RouteCalculationCancelled(routeHandle);
+
     sample_hmi_set_pin_mode(1);
     sample_hmi_request_mapDraw();
     sample_hmi_set_fource_update_mode();
@@ -457,8 +459,8 @@ std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > > Navicore::GetRou
     ::DBus::Struct< uint8_t, ::DBus::Variant > var1,var2;
     DBus::MessageIter iter1 = var1._2.writer();
     DBus::MessageIter iter2 = var2._2.writer();
-    iter1.append_uint32(0);
-    iter2.append_uint32(0);
+    iter1.append_uint32(NC_DM_GetRouteLength());
+    iter2.append_uint32(NC_DM_GetRouteAveTime()/10); //time seems to be in 1/10s
     var1._1 = 0;
     var2._1 = 0;
     routeOverview[GENIVI_NAVIGATIONCORE_TOTAL_DISTANCE] = var1;
