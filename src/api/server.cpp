@@ -46,11 +46,20 @@ void dbusServerLoop(Navicore **naviCore, Mapviewer **mapViewer)
     TRACE_DEBUG("DBus server loop initialized");
     int32_t error;
     uint32_t sessionHandle;
+    ::DBus::Struct< uint16_t, uint16_t > mapViewSize;
+    int32_t mapViewType;
+    uint32_t mapViewInstanceHandle;
 #ifndef STANDALONE
     (*naviCore)->CreateSession(std::string("dummy"),error,sessionHandle);
 #endif
-    // Create an instance of mapviewer
+    // Create an instance of mapviewer because it's done by default in the main()
+    // it's necessary to be consistent !
+    // TODO: creation of the mapview to be moved in CreateMapViewInstance
     (*mapViewer)->CreateSession(std::string("dummy"),error,sessionHandle);
+    mapViewSize._1=0; //to be fixed
+    mapViewSize._2=0; //to be fixed
+    mapViewType=0; //to be fixed
+    (*mapViewer)->CreateMapViewInstance(sessionHandle,mapViewSize,mapViewType,error,mapViewInstanceHandle);
 
     dispatcher.enter();
 }

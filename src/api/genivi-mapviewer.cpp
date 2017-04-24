@@ -19,6 +19,7 @@
 #include <inttypes.h>
 
 #include "glview.h"
+#include <smsallinclude.h> //maybe not really clean to include that file drectly ?
 #include "navicore.h"
 #include "navi.h"
 #include "naviexport.h"
@@ -232,13 +233,34 @@ void Mapviewer::SetTargetPoint(
     const uint32_t& mapViewInstanceHandle,
     const ::DBus::Struct< double, double, double >& targetPoint)
 {
-    TRACE_WARN("TODO: implement this function");
+    if (sessionHandle != lastSession || mapViewInstanceHandle != lastViewInstance ||
+        !sessionHandle || !mapViewInstanceHandle)
+    {
+        TRACE_ERROR("session %" PRIu32 ", instance %" PRIu32, sessionHandle, mapViewInstanceHandle );
+        return;
+    }
+    SMGEOCOORD geo;
+    geo.latitude=targetPoint._1 * 1024.0 * 3600.0;
+    geo.longitude=targetPoint._2 * 1024.0 * 3600.0;
+    SC_MNG_SetMapCursorCoord(mapViewInstanceHandle,&geo);
 }
 
 ::DBus::Struct< double, double, double > Mapviewer::GetTargetPoint(
     const uint32_t& mapViewInstanceHandle)
 {
-    TRACE_WARN("TODO: implement this function");
+    ::DBus::Struct< double, double, double > targetPoint;
+    if (mapViewInstanceHandle != lastViewInstance || !mapViewInstanceHandle)
+    {
+        TRACE_ERROR("required instance %" PRIu32 ", current instance %" PRIu32, mapViewInstanceHandle, lastViewInstance );
+
+        return targetPoint;
+    }
+
+    SMGEOCOORD geo;
+    SC_MNG_GetMapCursorCoord(mapViewInstanceHandle,&geo);
+    targetPoint._1=geo.latitude/1024.0/3600.0;
+    targetPoint._2=geo.longitude/1024.0/3600.0;
+    return targetPoint;
 }
 
 void Mapviewer::SetFollowCarMode(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const bool& followCarMode)
@@ -446,20 +468,61 @@ void Mapviewer::SetMapViewScale(const uint32_t& sessionHandle, const uint32_t& m
         return;
     }
 
-    if (scaleID > hmiMAP_MAX_SCALE)
+    int32_t isMinMax;
+
+    if (scaleID > hmiMAP_MAX_SCALE){
         main_window_mapScale = hmiMAP_MAX_SCALE;
-    else if (scaleID < 0)
+        isMinMax = GENIVI_MAPVIEWER_MAX;
+    }
+    else if (scaleID < 0){
         main_window_mapScale = 0;
-    else
+        isMinMax = GENIVI_MAPVIEWER_MIN;
+    }
+    else{
         main_window_mapScale = scaleID;
+        isMinMax = GENIVI_MAPVIEWER_MID;
+    }
 
     NC_MP_SetMapScaleLevel(lastSession, main_window_mapScale);
+
+    MapViewScaleChanged(mapViewInstanceHandle,scaleID,isMinMax);
+
     glvOnReDraw(glv_map_context);
 }
 
 void Mapviewer::SetMapViewScaleByDelta(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const int16_t& scaleDelta)
 {
-    TRACE_WARN("TODO: implement this function");
+    TRACE_INFO("view %" PRIu32 " in session %" PRIu32 ", scaleDelta %" PRIi16, mapViewInstanceHandle, sessionHandle, scaleDelta);
+
+    if (sessionHandle != lastSession || mapViewInstanceHandle != lastViewInstance ||
+        !sessionHandle || !mapViewInstanceHandle)
+    {
+        TRACE_ERROR("session %" PRIu32 ", instance %" PRIu32, sessionHandle, mapViewInstanceHandle );
+        return;
+    }
+
+    int32_t isMinMax;
+    int32_t newScaleID;
+    newScaleID=main_window_mapScale+scaleDelta;
+
+    if (newScaleID >= hmiMAP_MAX_SCALE){
+        main_window_mapScale = hmiMAP_MAX_SCALE;
+        isMinMax = GENIVI_MAPVIEWER_MAX;
+    }
+    else if (newScaleID <= 0){
+        main_window_mapScale = 0;
+        isMinMax = GENIVI_MAPVIEWER_MIN;
+    }
+    else{
+        main_window_mapScale = (uint8_t)newScaleID;
+        isMinMax = GENIVI_MAPVIEWER_MID;
+    }
+
+    NC_MP_SetMapScaleLevel(lastSession, main_window_mapScale);
+
+    MapViewScaleChanged(mapViewInstanceHandle,main_window_mapScale,isMinMax);
+
+    glvOnReDraw(glv_map_context);
 }
 
 void Mapviewer::SetMapViewScaleByMetersPerPixel(const uint32_t& sessionHandle, const uint32_t& mapViewInstanceHandle, const double& metersPerPixel)
@@ -473,7 +536,7 @@ void Mapviewer::GetMapViewScale(const uint32_t& mapViewInstanceHandle, uint8_t& 
 
     if (mapViewInstanceHandle != lastViewInstance || !mapViewInstanceHandle)
     {
-        TRACE_ERROR("instance %" PRIu32, mapViewInstanceHandle );
+        TRACE_ERROR("required instance %" PRIu32 ", current instance %" PRIu32, mapViewInstanceHandle, lastViewInstance );
         return;
     }
 

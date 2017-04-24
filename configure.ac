@@ -11,6 +11,13 @@ AC_ARG_ENABLE([standalone],
 
 AM_CONDITIONAL([ENABLE_STANDALONE], [test "$enable_standalone" = "yes"])
 
+AC_ARG_ENABLE([verbose],
+  [AS_HELP_STRING([--enable-verbose], [Enable log messages @<:@check@:>@])],
+  [:],
+  [enable_verbose=check])
+
+AM_CONDITIONAL([ENABLE_VERBOSE], [test "$enable_verbose" = "yes"])
+
 AM_INIT_AUTOMAKE()
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/main/navi.c])

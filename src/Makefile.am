@@ -8,6 +8,10 @@ if ENABLE_STANDALONE
 EXTRAFLAGS = -DSTANDALONE
 endif
 
+if ENABLE_VERBOSE
+DEBUGFLAGS = -DNAVI_TRACE_DEBUG
+endif
+
 libnavicore_la_SOURCES = \
 sms/lib/smsutil/src/smsutil.c \
 sms/lib/smsutil/src/polygon.cpp \
@@ -603,6 +607,7 @@ COPYING
 
 navi_CPPFLAGS = \
 	$(EXTRAFLAGS) \
+	$(DEBUGFLAGS) \
         -D_BSD_SOURCE \
         -I$(top_srcdir)/src/sms \
         -I$(top_srcdir)/src/sms/lib/include \
