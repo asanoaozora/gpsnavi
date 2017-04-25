@@ -185,8 +185,6 @@ static void *glvEventLoop_(void *arg)
 
 void Mapviewer::CreateMapViewInstance(const uint32_t& sessionHandle, const ::DBus::Struct< uint16_t, uint16_t >& mapViewSize, const int32_t& mapViewType, int32_t& error, uint32_t& mapViewInstanceHandle)
 {
-    uint32_t handle;
-
 	if (sessionHandle == 0 || sessionHandle != lastSession
 		|| lastViewInstance != 0) // for now, we only support 1 view per session
 	{
@@ -196,8 +194,8 @@ void Mapviewer::CreateMapViewInstance(const uint32_t& sessionHandle, const ::DBu
 
 	lastViewInstance++;
 
-        error=0; //not managed
-        mapViewInstanceHandle=lastViewInstance;
+    error=0; //not managed
+    mapViewInstanceHandle=lastViewInstance;
 }
 
 

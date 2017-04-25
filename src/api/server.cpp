@@ -16,7 +16,9 @@
 #include "genivi-navicore.h"
 #include "genivi-mapviewer.h"
 
-void dbusServerLoop(Navicore **naviCore, Mapviewer **mapViewer);
+typedef struct {int width; int height;} window_t;
+
+void dbusServerLoop(Navicore **naviCore, Mapviewer **mapViewer, window_t *window);
 
 DBus::BusDispatcher dispatcher;
 
@@ -28,7 +30,7 @@ void leave_signal_handler(int sig)
     dispatcher.leave();
 }
 
-void dbusServerLoop(Navicore **naviCore, Mapviewer **mapViewer)
+void dbusServerLoop(Navicore **naviCore, Mapviewer **mapViewer, window_t *window)
 {
     signal(SIGTERM, leave_signal_handler);
     signal(SIGINT, leave_signal_handler);
@@ -49,16 +51,18 @@ void dbusServerLoop(Navicore **naviCore, Mapviewer **mapViewer)
     ::DBus::Struct< uint16_t, uint16_t > mapViewSize;
     int32_t mapViewType;
     uint32_t mapViewInstanceHandle;
-#ifndef STANDALONE
-    (*naviCore)->CreateSession(std::string("dummy"),error,sessionHandle);
-#endif
-    // Create an instance of mapviewer because it's done by default in the main()
-    // it's necessary to be consistent !
-    // TODO: creation of the mapview to be moved in CreateMapViewInstance
-    (*mapViewer)->CreateSession(std::string("dummy"),error,sessionHandle);
-    mapViewSize._1=0; //to be fixed
-    mapViewSize._2=0; //to be fixed
-    mapViewType=0; //to be fixed
+
+    // Sessions of navicore and mapviewer has been created into navi.c
+    // so it's needed to register it by calling CreateSession manually
+    // NB: in the test scripts do not try to do it, beacuse there's only one session managed at the moment
+    (*naviCore)->CreateSession(std::string("Navicore main"),error,sessionHandle);
+    (*mapViewer)->CreateSession(std::string("Mapviewer main"),error,sessionHandle);
+
+    // A mapview has been created into navi.c
+    // so it's needed to register it by calling CreateMapViewInstance manually
+    mapViewSize._1=window->width;
+    mapViewSize._2=window->height;
+    mapViewType=GENIVI_MAPVIEWER_MAIN_MAP;
     (*mapViewer)->CreateMapViewInstance(sessionHandle,mapViewSize,mapViewType,error,mapViewInstanceHandle);
 
     dispatcher.enter();
@@ -68,8 +72,8 @@ void *dbus_api_server(void *vp)
 {
 	Navicore  *naviCore;
 	Mapviewer *mapViewer;
-	
-	dbusServerLoop(&naviCore, &mapViewer);
+    window_t *window = (window_t *)vp;
+    dbusServerLoop(&naviCore, &mapViewer, window);
 	
     delete naviCore;
     delete mapViewer;
@@ -77,12 +81,17 @@ void *dbus_api_server(void *vp)
     pthread_exit(0);
 }
 
-void CreateAPIServer(void)
+static window_t s_window;
+
+void CreateAPIServer(const int width, const int height)
 {
 	pthread_attr_t attr;
 	
+    s_window.width=width;
+    s_window .height=height;
+
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&g_dbus_thread, &attr, dbus_api_server, NULL);	
+    pthread_create(&g_dbus_thread, &attr, dbus_api_server, &s_window);
 	pthread_attr_destroy(&attr);
 }

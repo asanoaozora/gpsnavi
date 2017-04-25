@@ -14,7 +14,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-void CreateAPIServer(void);
+void CreateAPIServer(const int width, const int height);
 
 #ifdef __cplusplus
 }

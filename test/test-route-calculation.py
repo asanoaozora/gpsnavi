@@ -129,7 +129,8 @@ def catch_route_calculation_successful_signal_handler(routeHandle, unfulfilled_p
     else:
         for i in range(routes.length):
             g_routing_interface.DeleteRoute(dbus.UInt32(g_session_handle),dbus.UInt32(routes[i].getElementsByTagName("handle")[0].childNodes[0].data))
-        g_session_interface.DeleteSession(dbus.UInt32(g_session_handle))
+        #g_session_interface.DeleteSession(dbus.UInt32(g_session_handle))
+	exit() # exit without deleting session
 
 def catch_session_deleted_signal_handler(sessionHandle):
     print('Session handle deleted: '+str(sessionHandle))
@@ -196,8 +197,9 @@ session = bus.get_object('org.genivi.navigation','/org/genivi/navigation/navigat
 g_session_interface = dbus.Interface(session, dbus_interface='org.genivi.navigation.navigationcore.Session')
 
 #get session handle
-ret = g_session_interface.CreateSession(dbus.String("test route calculation"))
-g_session_handle=ret[1]
+#ret = g_session_interface.CreateSession(dbus.String("test route calculation"))
+#g_session_handle=ret[1]
+g_session_handle=1 #session is already created by default
 print 'Session handle: ' + str(g_session_handle)
 
 routing_obj = bus.get_object('org.genivi.navigation','/org/genivi/navigation/navigationcore')

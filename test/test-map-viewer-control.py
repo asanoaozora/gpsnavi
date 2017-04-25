@@ -88,10 +88,10 @@ def mapviewer_mapViewScaleChanged_handler(mapViewInstanceHandle,scale,isMinMax):
                 dbus.Int16(1))
         else:
             print 'Test PASSED'
-            MapViewerControl_interface.ReleaseMapViewInstance( \
-                dbus.UInt32(sessionhandle), \
-                dbus.UInt32(mapviewerhandle))
-            session_interface.DeleteSession(sessionhandle)
+            #MapViewerControl_interface.ReleaseMapViewInstance( \
+            #    dbus.UInt32(sessionhandle), \
+            #    dbus.UInt32(mapviewerhandle))
+            #session_interface.DeleteSession(sessionhandle)
             exit()
 
 #timeout

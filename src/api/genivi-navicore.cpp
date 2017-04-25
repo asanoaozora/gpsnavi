@@ -693,12 +693,23 @@ std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > >
 
 void Navicore::Navicore::StartGuidance(const uint32_t& sessionHandle, const uint32_t& routeHandle)
 {
-    TRACE_WARN("TODO: implement this function");
+    if (sessionHandle != lastSession || routeHandle != lastRoute ||
+        !sessionHandle || !routeHandle)
+    {
+        TRACE_ERROR("session %" PRIu32 ", route %" PRIu32, sessionHandle, routeHandle);
+        return;
+    }
+    NC_Guide_StartGuide();
 }
 
 void Navicore::StopGuidance(const uint32_t& sessionHandle)
 {
-    TRACE_WARN("TODO: implement this function");
+    if (sessionHandle != lastSession || !sessionHandle)
+    {
+        TRACE_ERROR("session %" PRIu32, sessionHandle);
+        return;
+    }
+    NC_Guide_StopGuide();
 }
 
 int32_t Navicore::SetVoiceGuidance(const bool& activate, const std::string& voice)

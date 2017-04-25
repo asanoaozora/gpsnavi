@@ -689,7 +689,7 @@ int main(int argc, char *argv[])
 
 	glvOnReDraw(glv_map_context);
 
-	CreateAPIServer();
+    CreateAPIServer(WinWidth, WinHeight);
 
 	glvEventLoop(glv_dpy);
 
