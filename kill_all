@@ -1,0 +1,6 @@
+#!/bin/sh
+echo 'kill navi and hmi'
+kill -9 `ps -ef | grep ./run_navi | grep -v grep | awk '{print $2}'`
+kill -9 `ps -ef | grep ./navi | grep -v grep | awk '{print $2}'`
+kill -9 `ps -ef | grep ./run_hmi | grep -v grep | awk '{print $2}'`
+kill -9 `ps -ef | grep ./hmi-launcher | grep -v grep | awk '{print $2}'`

@@ -657,8 +657,7 @@ int main(int argc, char *argv[])
 	glv_input_func.touch_up     = sample_hmi_button_up;
 
 	glv_map_window = glvCreateNativeWindow(glv_dpy, 0, 0, WinWidth, WinHeight,NULL);
-	glv_hmi_window = glvCreateNativeWindow(glv_dpy, 0, 0, WinWidth, WinHeight,glv_map_window);
-
+    glv_hmi_window = glvCreateNativeWindow(glv_dpy, 0, 0, WinWidth, WinHeight,glv_map_window);
 	glvInitTimer();
 
 	/* ----------------------------------------------------------------------------------------------- */
@@ -678,9 +677,8 @@ int main(int argc, char *argv[])
 	hmi_SurfaceViewEventFunc.timer		= NULL;
 	hmi_SurfaceViewEventFunc.gesture	= NULL;
 
-	glv_hmi_context = glvCreateSurfaceView(glv_hmi_window,NC_MP_MAP_MAIN,&hmi_SurfaceViewEventFunc);
-
-	/* ----------------------------------------------------------------------------------------------- */
+    glv_hmi_context = glvCreateSurfaceView(glv_hmi_window,NC_MP_MAP_MAIN,&hmi_SurfaceViewEventFunc);
+    /* ----------------------------------------------------------------------------------------------- */
 	glvCreateTimer(glv_map_context,1000,GESTURE_FLICK_TIMER_ID     ,GLV_TIMER_REPEAT   ,  50);
 	glvCreateTimer(glv_map_context,1000,GESTURE_LONG_PRESS_TIMER_ID,GLV_TIMER_ONLY_ONCE, 700);
 	/* ----------------------------------------------------------------------------------------------- */
@@ -694,9 +692,8 @@ int main(int argc, char *argv[])
 	glvEventLoop(glv_dpy);
 
 	glvDestroyNativeWindow(glv_map_window);
-	glvDestroyNativeWindow(glv_hmi_window);
-
-	glvCloseDisplay(glv_dpy);
+    glvDestroyNativeWindow(glv_hmi_window);
+    glvCloseDisplay(glv_dpy);
 
 	return(0);
 }

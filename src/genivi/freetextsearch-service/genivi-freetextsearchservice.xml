@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="introspect.xsl"?>
+<!-- SPDX-License-Identifier: MPL-2.0
+     Copyright (C) 2016, BMW Car IT GmbH, Continental Automotive GmbH, PCA Peugeot Citroën, XS Embedded GmbH, TomTom International B.V., Alpine Electronics R&D Europe GmbH, AISIN AW CO., LTD.,  Neusoft Technology Solutions GmbH, Jaguar Land Rover Limited, Visteon Corporation
+     This Source Code Form is subject to the terms of the
+     Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with
+     this file, you can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+<node xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="/org/genivi/navigation/freetextsearchservice/FreeTextSearch" xsi:noNamespaceSchemaLocation="introspect.xsd" >
+    <interface name="org.genivi.navigation.freetextsearchservice.FreeTextSearch">
+        <method name="getInterfaceVersion">
+            <arg name="value" type="uu" direction="out" />
+        </method>
+        <signal name="ftsDone">
+            <arg name="sessionHandle" type="u" direction="out" />
+            <arg name="pageId" type="i" direction="out" />
+            <arg name="ftsStatus" type="i" direction="out" />
+        </signal>
+        <method name="subscribeForftsDoneSelective">
+          <arg direction="out" name="status" type="b">
+          </arg>
+        </method>
+        <method name="unsubscribeFromftsDoneSelective">
+        </method>                     
+        <signal name="ftsResultAddresses">
+            <arg name="sessionHandle" type="u" direction="out" />
+            <arg name="pageId" type="i" direction="out" />
+            <arg name="addresses" type="a(ussasass(yv)(dd)iqb)" direction="out" />
+            <arg name="moreAvailable" type="b" direction="out" />
+        </signal>
+        <method name="subscribeForftsResultAddressesSelective">
+          <arg direction="out" name="status" type="b">
+          </arg>
+        </method>
+        <method name="unsubscribeFromftsResultAddressesSelective">
+        </method>                     
+        <signal name="ftsResultPois">
+            <arg name="sessionHandle" type="u" direction="out" />
+            <arg name="pageId" type="i" direction="out" />
+            <arg name="pois" type="a(uuasssasasssss(dd)iqbbbii)" direction="out" />
+            <arg name="moreAvailable" type="b" direction="out" />
+        </signal>
+        <method name="subscribeForftsResultPoisSelective">
+          <arg direction="out" name="status" type="b">
+          </arg>
+        </method>
+        <method name="unsubscribeFromftsResultPoisSelective">
+        </method>                     
+        <signal name="ftsResultPoiSuggestions">
+            <arg name="sessionHandle" type="u" direction="out" />
+            <arg name="pageId" type="i" direction="out" />
+            <arg name="poiCategories" type="a(usssa(ussasass(yv)(dd)iqb)q)" direction="out" />
+        </signal>
+        <method name="subscribeForftsResultPoiSuggestionsSelective">
+          <arg direction="out" name="status" type="b">
+          </arg>
+        </method>
+        <method name="unsubscribeFromftsResultPoiSuggestionsSelective">
+        </method>                     
+        <method name="getVersion">
+            <arg name="version" type="(qqqs)" direction="out" />
+        </method>
+        <method name="ftsRequest">
+            <arg name="inputString" type="s" direction="in" />
+            <arg name="searchLocation" type="(dd)" direction="in" />
+            <arg name="searchShapes" type="a(yv)" direction="in" />
+            <arg name="pageSize" type="q" direction="in" />
+            <arg name="searchOptions" type="u" direction="in" />
+            <arg name="searchConditions" type="s" direction="in" />
+            <arg name="fuzzyLevel" type="y" direction="in" />
+            <arg name="error" type="i" direction="out" />
+            <arg name="sessionHandle" type="u" direction="out" />
+            <arg name="pageId" type="i" direction="out" />
+        </method>
+        <method name="ftsNextPage">
+            <arg name="sessionHandle" type="u" direction="in" />
+            <arg name="searchOptions" type="u" direction="in" />
+            <arg name="error" type="i" direction="out" />
+            <arg name="pageId" type="i" direction="out" />
+        </method>
+        <method name="ftsCancel">
+            <arg name="sessionHandle" type="u" direction="in" />
+            <arg name="error" type="i" direction="out" />
+        </method>
+        <method name="deleteLocationHandles">
+            <arg name="locationHandleList" type="au" direction="in" />
+        </method>
+    </interface>
+</node>
+        
+

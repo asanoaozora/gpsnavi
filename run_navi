@@ -5,3 +5,4 @@ LD_LIBRARY_PATH=.:/usr/local/lib:/usr/lib;export LD_LIBRARY_PATH
 NAVI_DATA_DIR=~/navi_data/japan_TR9/;export NAVI_DATA_DIR
 cd src/.libs
 ./navi --width 800 --height 480
+

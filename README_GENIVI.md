@@ -1,12 +1,29 @@
 Navigation Open Source Project
 ==============================
 
-This recipe for Navigation demo is intended to be built either into Automotive Grade Linux (AGL) source code
-(https://wiki.automotivelinux.org/agl-distro/source-code).
-or outside AGL (see README_GENIVI.md for further explanations)
-
+This recipe for Navigation demo is intended to be built outside AGL.
 The DBus based APIs used by this demo (see src/api folder) are aligned with the release Nostromo of GENIVI:
 https://github.com/GENIVI/navigation/tree/73f74aadc03a1aeffb0937220dca803e8d7149b8/api
+
+## How-to build
+./configure --enable-standalone 
+additional option:
+--enable-verbose --> make with -DNAVI_TRACE_DEBUG to log runtime messages
+NB: To test it under Ubuntu (with weston), please comment line 30 of src/glview_wayland.c to unuse IVI_SHELL)
+make
+
+cd src/hmi
+mkdir build
+cd build
+cmake ../
+(it also generates the HMI)
+make 
+make install
+
+## How-to generate the QML HMI style-sheet
+The native HMI is gtk based, but it's also possible to connect to the GENIVI FSA HMI. First it's needed to generate it:
+./src/hmi/prepare.sh -i ./src/hmi/gimp/genivi-theme/800x480/
+
 
 ## Usage
 
@@ -21,7 +38,21 @@ https://github.com/GENIVI/navigation/tree/73f74aadc03a1aeffb0937220dca803e8d7149
 
     navi
 
+## To test 
+
+This code has been tested under Ubuntu 16.04 LTS.
+Under the test folder there are some test scripts in Python that allows to test the APIs. 
+(tested under Weston)
+./test-map-viewer-control.py -l location_tokyo.xml
+--> zoom in/out
+./test-route-calculation.py -r route_tokyo.xml
+--> route calculation
+./test-guidance.py -r route_tokyo.xml
+--> route calculation and guidance 
+
 ## Licence
+
+GENIVI stuff is MPLV2 license.
 
 GPS Navigation is dual licensed under the GNU General Public License (GPL) version 2 and a commercial license with Hitachi, Ltd.  You may adopt either the GPL version 2 or a commercial license at the discretion of yourself.
 GPS Navigation is available under commercial licenses negotiated directly with Hitachi, Ltd.  If you wish to combine and distribute your proprietary software with GPS Navigation, you had better adopt a commercial license, otherwise, you may be required to distribute the entire source code of your proprietary software under GPL version 2, as the GPL version 2 is applied to all loadable GPS Navigation modules used in your software.

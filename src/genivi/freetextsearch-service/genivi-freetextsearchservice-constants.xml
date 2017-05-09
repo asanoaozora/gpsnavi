@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="constants.xsl"?>
+<!-- SPDX-License-Identifier: MPL-2.0
+     Copyright (C) 2016, BMW Car IT GmbH, Continental Automotive GmbH, PCA Peugeot Citroën, XS Embedded GmbH, TomTom International B.V., Alpine Electronics R&D Europe GmbH, AISIN AW CO., LTD.,  Neusoft Technology Solutions GmbH, Jaguar Land Rover Limited, Visteon Corporation
+     This Source Code Form is subject to the terms of the
+     Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with
+     this file, you can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+
+<constants  name="FreeTextSearch">
+    <id name="FTSRANGECONSTANTS_MAX_FUZZY_LEVEL" value="5" />
+    <id name="FTSRANGECONSTANTS_MAX_SHAPES" value="31" />
+    <id name="FTSRANGECONSTANTS_MAX_STRING_LIST_SIZE" value="100" />
+    <id name="FTSRANGECONSTANTS_MAX_RESULTS" value="500" />
+    <id name="FTSRANGECONSTANTS_MAX_STRING_LENGTH" value="4095" />
+    <id name="FTSRANGECONSTANTS_MAX_LOCATION_HANDLES_LIST_SIZE" value="4096" />
+    
+    <id name="SEARCHOPTION_ADDRESS" value="1" />
+    <id name="SEARCHOPTION_POI" value="2" />
+    <id name="SEARCHOPTION_POI_SUGGESTION" value="4" />
+    <id name="SEARCHOPTION_NO_PLACES" value="65536" />
+    <id name="SEARCHOPTION_NO_STREETS" value="131072" />
+    <id name="SEARCHOPTION_NO_POI_CATEGORY_ASSUMPTIONS" value="262144" />
+    <id name="SEARCHOPTION_NO_POLITICAL_DIVISIONS" value="524288" />
+    <id name="SEARCHOPTION_POI_INDICATE_LINKS" value="1048576" />
+    
+    <id name="FTSSTATUS_OK" value="0" />
+    <id name="FTSSTATUS_ABORTED" value="1" />
+    <id name="FTSSTATUS_PREFIX_TOO_SHORT" value="2" />
+    <id name="FTSSTATUS_INTERNAL_ERROR" value="3" />
+    <id name="FTSSTATUS_INDEX_MISSING" value="4" />
+    <id name="FTSSTATUS_BAD_VERSION" value="5" />
+    <id name="FTSSTATUS_INVALID_PARAMETER_QUERY" value="6" />
+    <id name="FTSSTATUS_INVALID_PARAMETER_SEARCH_LOCATION" value="7" />
+    <id name="FTSSTATUS_INVALID_PARAMETER_PAGE_SIZE" value="8" />
+    <id name="FTSSTATUS_INVALID_PARAMETER_SEARCH_OPTIONS" value="9" />
+    <id name="FTSSTATUS_INVALID_PARAMETER_SEARCH_CONDITIONS" value="10" />
+    <id name="FTSSTATUS_INVALID_PARAMETER_SEARCH_SHAPES" value="11" />
+    <id name="FTSSTATUS_INVALID_PARAMETER_FUZZY_LEVEL" value="12" />
+    <id name="FTSSTATUS_INVALID_COORDINATES_INPUT" value="13" />
+    
+    <id name="PLACETYPE_OTHER" value="0" />
+    <id name="PLACETYPE_SETTLEMENT" value="1" />
+    
+</constants>
