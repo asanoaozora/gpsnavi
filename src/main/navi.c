@@ -269,8 +269,10 @@ INT32 SetImageForMemoryCallBack(NCBITMAPINFO* pInfo)
 
 INT32 MapDrawEndCallBack(NCDRAWENDINFO* pInfo)
 {
-	sample_hmi_draw_compass(pInfo->rotate);
-	sample_hmi_request_update();
+#ifndef STANDALONE
+    sample_hmi_draw_compass(pInfo->rotate);
+    sample_hmi_request_update();
+#endif
 	return (1);
 }
 
@@ -677,7 +679,9 @@ int main(int argc, char *argv[])
 	hmi_SurfaceViewEventFunc.timer		= NULL;
 	hmi_SurfaceViewEventFunc.gesture	= NULL;
 
+#ifndef STANDALONE
     glv_hmi_context = glvCreateSurfaceView(glv_hmi_window,NC_MP_MAP_MAIN,&hmi_SurfaceViewEventFunc);
+#endif
     /* ----------------------------------------------------------------------------------------------- */
 	glvCreateTimer(glv_map_context,1000,GESTURE_FLICK_TIMER_ID     ,GLV_TIMER_REPEAT   ,  50);
 	glvCreateTimer(glv_map_context,1000,GESTURE_LONG_PRESS_TIMER_ID,GLV_TIMER_ONLY_ONCE, 700);

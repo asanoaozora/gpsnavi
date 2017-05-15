@@ -38,17 +38,26 @@ The native HMI is gtk based, but it's also possible to connect to the GENIVI FSA
 
     navi
 
-## To test 
+## Unitary tests 
 
 This code has been tested under Ubuntu 16.04 LTS.
 Under the test folder there are some test scripts in Python that allows to test the APIs. 
-(tested under Weston)
+
+To launch the code:
+weston
+./run_navi
+Into another terminal (outside weston)
 ./test-map-viewer-control.py -l location_tokyo.xml
 --> zoom in/out
 ./test-route-calculation.py -r route_tokyo.xml
 --> route calculation
 ./test-guidance.py -r route_tokyo.xml
 --> route calculation and guidance 
+
+## Test with HMI (work in progress)
+weston
+./run_navi
+./run_hmi
 
 ## Licence
 

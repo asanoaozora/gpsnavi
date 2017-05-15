@@ -23,6 +23,15 @@
 #include "navi.h"
 #include "naviexport.h"
 
+static DBus::Variant
+variant_string(std::string s)
+{
+    DBus::Variant variant;
+    DBus::MessageIter iter=variant.writer();
+    iter << s;
+    return variant;
+}
+
 Navicore::Navicore( DBus::Connection &connection )
     : DBus::ObjectAdaptor(connection, "/org/genivi/navigation/navigationcore"),
     lastSession(0),client(""),lastRoute(0),IsSimulationMode(false),
@@ -663,7 +672,14 @@ void Navicore::SetPosition(
 
 void Navicore::GetCurrentAddress(const std::vector< int32_t >& valuesToReturn, int32_t& error, std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > >& address)
 {
-    TRACE_WARN("TODO: implement this function");
+    std::vector< int32_t >::const_iterator it;
+    char *street_name="----"; //to be implemented
+    for (it = valuesToReturn.begin(); it < valuesToReturn.end(); it++) {
+        if (*it == GENIVI_NAVIGATIONCORE_STREET && street_name) {
+            address[*it]._2=variant_string(street_name);
+        }
+    }
+    error=0; //not implemented yet
 }
 
 std::map< int32_t, ::DBus::Struct< uint8_t, ::DBus::Variant > >

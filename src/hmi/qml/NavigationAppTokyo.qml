@@ -56,27 +56,21 @@ ApplicationWindow {
         id:dbusIf;
     }
 
-    function initScale()
-    {
-        var res=Genivi.mapviewer_GetScaleList(dbusIf);
-        Genivi.scaleList=res[1];
-        Genivi.minZoomId=Genivi.scaleList[1][1];
-        Genivi.maxZoomId=Genivi.scaleList[Genivi.scaleList.length-1][1];
-    }
-
 	Component.onCompleted: {
         //set persistent data
         Genivi.setlang("jpn","JPN","Hrkt"); //set to japanese
         Genivi.setDefaultPosition(35.758795,139.316533,19); // (1 Chome-1-5 Gonokami Hamura-shi, Tōkyō-to)
+        Genivi.setDefaultAddress("Japan","東京","井ノ頭通り","17"); // preferred address
+
 
         //configure the middleware
-        Genivi.setDefaultAddress("Japan","東京","井ノ頭通り","17"); // preferred address
         Genivi.navigationcore_configuration_SetLocale(dbusIf,Genivi.g_language,Genivi.g_country,Genivi.g_script);
 
-        //init the scale list
-	Genivi.g_mapviewer_session[1] = 1 //session already created
-	Genivi.g_mapviewer_handle[1] = 1 //instance already created
-        initScale();
+        //launch the map viewer and init the scale list
+        //the map viewer and the corresponding session are already created into the middleware
+        Genivi.g_mapviewer_session[1] = 1
+        Genivi.g_mapviewer_handle[1] = 1
+        Genivi.initScale(dbusIf);
 
         //launch the HMI
         load("NavigationAppBrowseMap");

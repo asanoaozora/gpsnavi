@@ -431,21 +431,21 @@ function lm_message(par, func, args)
 function navigationcore_message(par, iface, func, args)
 {
     hookMethod(func);
-    return par.message("org.genivi.navigation.navigationcore."+iface,"/org/genivi/navigationcore","org.genivi.navigation.navigationcore."+iface, func, args);
+    return par.message("org.genivi.navigation","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore."+iface, func, args);
 }
 
 // Send a message to mapviewer (basic)
 function mapviewer_message(par, iface, func, args)
 {
     hookMethod(func);
-    return par.message("org.genivi.navigation.mapviewer."+iface,"/org/genivi/mapviewer","org.genivi.navigation.mapviewer."+iface, func, args);
+    return par.message("org.genivi.navigation","/org/genivi/navigation/mapviewer","org.genivi.navigation.mapviewer."+iface, func, args);
 }
 
 // Send a message to poiservice (basic)
 function poi_message(par, iface, func, args)
 {
     hookMethod(func);
-    return par.message("org.genivi.navigation.poiservice."+iface,"/org/genivi/poiservice/"+iface,"org.genivi.navigation.poiservice."+iface, func, args);
+    return par.message("org.genivi.navigation","/org/genivi/navigation/poiservice","org.genivi.navigation.poiservice."+iface, func, args);
 }
 
 // Send a message to demonstrator (basic)
@@ -465,87 +465,87 @@ function hookSignal(arg)
 
 function connect_simulationStatusChangedSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.MapMatchedPosition","SimulationStatusChanged",menu,"simulationStatusChanged");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.MapMatchedPosition","SimulationStatusChanged",menu,"simulationStatusChanged");
 }
 
 function connect_simulationSpeedChangedSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.MapMatchedPosition","SimulationSpeedChanged",menu,"simulationSpeedChanged");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.MapMatchedPosition","SimulationSpeedChanged",menu,"simulationSpeedChanged");
 }
 
 function connect_searchStatusSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.LocationInput","SearchStatus",menu,"searchStatus");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.LocationInput","SearchStatus",menu,"searchStatus");
 }
 
 function connect_searchResultListSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.LocationInput","SearchResultList",menu,"searchResultList");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.LocationInput","SearchResultList",menu,"searchResultList");
 }
 
 function connect_spellResultSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.LocationInput","SpellResult",menu,"spellResult");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.LocationInput","SpellResult",menu,"spellResult");
 }
 
 function connect_guidanceStatusChangedSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.Guidance","GuidanceStatusChanged",menu,"guidanceStatusChanged");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.Guidance","GuidanceStatusChanged",menu,"guidanceStatusChanged");
 }
 
 function connect_guidanceWaypointReachedSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.Guidance","WaypointReached",menu,"guidanceWaypointReached");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.Guidance","WaypointReached",menu,"guidanceWaypointReached");
 }
 
 function connect_guidanceManeuverChangedSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.Guidance","ManeuverChanged",menu,"guidanceManeuverChanged");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.Guidance","ManeuverChanged",menu,"guidanceManeuverChanged");
 }
 
 function connect_guidancePositionOnRouteChangedSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.Guidance","PositionOnRouteChanged",menu,"guidancePositionOnRouteChanged");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.Guidance","PositionOnRouteChanged",menu,"guidancePositionOnRouteChanged");
 }
 
 function connect_mapmatchedpositionPositionUpdateSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.MapMatchedPosition","PositionUpdate",menu,"mapmatchedpositionPositionUpdate");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.MapMatchedPosition","PositionUpdate",menu,"mapmatchedpositionPositionUpdate");
 }
 
 function connect_mapmatchedpositionAddressUpdateSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.MapMatchedPosition","AddressUpdate",menu,"mapmatchedpositionAddressUpdate");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.MapMatchedPosition","AddressUpdate",menu,"mapmatchedpositionAddressUpdate");
 }
 
 function connect_routeCalculationSuccessfulSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.Routing","RouteCalculationSuccessful",menu,"routeCalculationSuccessful");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.Routing","RouteCalculationSuccessful",menu,"routeCalculationSuccessful");
 }
 
 function connect_routeCalculationFailedSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.Routing","RouteCalculationFailed",menu,"routeCalculationFailed");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.Routing","RouteCalculationFailed",menu,"routeCalculationFailed");
 }
 
 function connect_routeCalculationProgressUpdateSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.Routing","RouteCalculationProgressUpdate",menu,"routeCalculationProgressUpdate");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.Routing","RouteCalculationProgressUpdate",menu,"routeCalculationProgressUpdate");
 }
 
 function connect_currentSelectionCriterionSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.LocationInput","CurrentSelectionCriterion",menu,"currentSelectionCriterion");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.LocationInput","CurrentSelectionCriterion",menu,"currentSelectionCriterion");
 }
 
 function connect_contentUpdatedSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.LocationInput","ContentUpdated",menu,"contentUpdated");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.LocationInput","ContentUpdated",menu,"contentUpdated");
 }
 
 function connect_configurationChangedSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/navigationcore","org.genivi.navigation.navigationcore.Configuration","ConfigurationChanged",menu,"configurationChanged");
+    return interface.connect("","/org/genivi/navigation/navigationcore","org.genivi.navigation.navigationcore.Configuration","ConfigurationChanged",menu,"configurationChanged");
 }
 
 function connect_tripDataUpdatedSignal(interface,menu)
@@ -560,7 +560,7 @@ function connect_fuelStopAdvisorWarningSignal(interface,menu)
 
 function connect_mapViewScaleChangedSignal(interface,menu)
 {
-    return interface.connect("","/org/genivi/mapviewer","org.genivi.navigation.mapviewer.MapViewerControl","MapViewScaleChanged",menu,"mapViewScaleChanged");
+    return interface.connect("","/org/genivi/navigation/mapviewer","org.genivi.navigation.mapviewer.MapViewerControl","MapViewScaleChanged",menu,"mapViewScaleChanged");
 }
 
 //----------------- NavigationCore dbus messages -----------------
@@ -1055,6 +1055,14 @@ function mapviewer_SetMapViewPan(dbusIf,panningAction,x,y)
 function mapviewer_ConvertPixelCoordsToGeoCoords(dbusIf,x,y)
 {
     return mapviewercontrol_message(dbusIf, "ConvertPixelCoordsToGeoCoords",["array",["structure",["uint16",x,"uint16",y]]]);
+}
+
+function initScale(dbusIf)
+{
+    var res=mapviewer_GetScaleList(dbusIf);
+    scaleList=res[1];
+    minZoomId=scaleList[1][1];
+    maxZoomId=scaleList[scaleList.length-1][1];
 }
 
 //---------------- MapViewer messages (handle 2) ----------------

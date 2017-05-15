@@ -19,7 +19,7 @@
 #include <inttypes.h>
 
 #include "glview.h"
-#include <smsallinclude.h> //maybe not really clean to include that file drectly ?
+#include <smsallinclude.h> //maybe not really clean to include that file directly ?
 #include "navicore.h"
 #include "navi.h"
 #include "naviexport.h"
