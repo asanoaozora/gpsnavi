@@ -6,6 +6,7 @@ The DBus based APIs used by this demo (see src/api folder) are aligned with the 
 https://github.com/GENIVI/navigation/tree/73f74aadc03a1aeffb0937220dca803e8d7149b8/api
 
 ## How-to build
+./autogen.sh
 ./configure --enable-standalone 
 additional option:
 --enable-verbose --> make with -DNAVI_TRACE_DEBUG to log runtime messages
@@ -19,6 +20,7 @@ cmake ../
 (it also generates the HMI)
 make 
 make install
+cd ../../../
 
 ## How-to generate the QML HMI style-sheet
 The native HMI is gtk based, but it's also possible to connect to the GENIVI FSA HMI. First it's needed to generate it:
@@ -40,18 +42,19 @@ The native HMI is gtk based, but it's also possible to connect to the GENIVI FSA
 
 ## Unitary tests 
 
-This code has been tested under Ubuntu 16.04 LTS.
+This code has been tested under Ubuntu 17.10
 Under the test folder there are some test scripts in Python that allows to test the APIs. 
 
 To launch the code:
+NB: into the scripts, the database is supposed to be under $HOME
 weston
 ./run_navi
 Into another terminal (outside weston)
-./test-map-viewer-control.py -l location_tokyo.xml
+./test/test-map-viewer-control.py -l location_tokyo.xml
 --> zoom in/out
-./test-route-calculation.py -r route_tokyo.xml
+./test/test-route-calculation.py -r route_tokyo.xml
 --> route calculation
-./test-guidance.py -r route_tokyo.xml
+./test/test-guidance.py -r route_tokyo.xml
 --> route calculation and guidance 
 
 ## Test with HMI (work in progress)

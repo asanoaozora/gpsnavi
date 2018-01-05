@@ -11,6 +11,9 @@
 #define GENIVI_MAPVIEWER_H
 
 #include <pthread.h>
+#ifndef DBUS_HAS_RECURSIVE_MUTEX
+#define DBUS_HAS_RECURSIVE_MUTEX
+#endif
 #include <dbus-c++/dbus.h>
 #include "genivi-mapviewer-configuration_adaptor.h"
 #include "genivi-mapviewer-session_adaptor.h"

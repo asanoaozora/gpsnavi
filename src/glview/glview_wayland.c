@@ -27,7 +27,7 @@
 #include <wayland-client.h>
 #include <wayland-egl.h>
 
-#define	IVISHELL	(1)
+//#define	IVISHELL	(1)
 #define IVI_SURFACE_ID (9000)
 #include "ivi-application-client-protocol.h"
 

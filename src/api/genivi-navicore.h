@@ -10,6 +10,9 @@
 #ifndef GENIVI_NAVICORE_H
 #define GENIVI_NAVICORE_H
 
+#ifndef DBUS_HAS_RECURSIVE_MUTEX
+#define DBUS_HAS_RECURSIVE_MUTEX
+#endif
 #include <dbus-c++/dbus.h>
 #include "genivi-navigationcore-session_adaptor.h"
 #include "genivi-navigationcore-routing_adaptor.h"
